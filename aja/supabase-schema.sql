@@ -59,8 +59,16 @@ create policy "aja_orders_delete_admin" on public.aja_orders
   for delete using (public.is_admin());
 
 -- ---------- Realtime (admin voit les commandes en direct) ----------
-alter publication supabase_realtime add table public.aja_orders;
-alter publication supabase_realtime add table public.aja_products;
+-- (idempotent : re-exécutable sans erreur 42710)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'aja_orders') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.aja_orders;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'aja_products') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.aja_products;
+  END IF;
+END $$;
 
 -- ---------- Seed catalogue ----------
 insert into public.aja_products (id, category, name_fr, name_en, name_ar, desc_fr, desc_en, desc_ar, price, old_price, image, badge) values
