@@ -1,8 +1,8 @@
-const PRODUCTS = [
-{id:'tee-noir',cat:'tops',price:79,old:99,img:'../Aja_tshirt_mockup.png',badge:'BEST',
+let PRODUCTS = [ // catalogue local (fallback si cloud injoignable)
+{id:'tee-noir',cat:'tops',price:79,old:99,img:'Aja_tshirt_mockup.png',badge:'BEST',
  name:{fr:'Tee Oversize AJÀ Noir — Broderie Or',en:'AJÀ Black Oversize Tee — Gold Embroidery',ar:'تي شيرت AJÀ أسود أوفرسايز — تطريز ذهبي'},
  desc:{fr:'Coton lourd 240g, coupe femme oversize, logo or poitrine.',en:'Heavy 240g cotton, women oversize fit, gold chest logo.',ar:'قطن ثقيل، قصّة نسائية واسعة، شعار ذهبي على الصدر.'}},
-{id:'tee-creme',cat:'tops',price:79,old:99,img:'../Aja_tshirt_mockup.png',badge:'NEW',
+{id:'tee-creme',cat:'tops',price:79,old:99,img:'Aja_tshirt_mockup.png',badge:'NEW',
  name:{fr:'Tee Crème AJÀ — Col rond',en:'AJÀ Cream Tee — Round neck',ar:'تي شيرت AJÀ كريمي — ياقة مستديرة'},
  desc:{fr:'Crème doux, broderie feuille de laurier manche.',en:'Soft cream, laurel sleeve embroidery.',ar:'لون كريمي ناعم، تطريز ورق الغار على الكم.'}},
 {id:'robe-creme',cat:'dresses',price:129,old:159,img:'robe-creme.jpg',badge:'-20%',
@@ -11,16 +11,16 @@ const PRODUCTS = [
 {id:'robe-noire',cat:'dresses',price:139,old:169,img:'hero-model.jpg',badge:'LIMITED',
  name:{fr:'Robe Noire Élégante AJÀ',en:'AJÀ Elegant Black Dress',ar:'فستان AJÀ أسود أنيق'},
  desc:{fr:'Noir profond, détail or, coupe intemporelle.',en:'Deep black, gold detail, timeless cut.',ar:'أسود عميق، تفاصيل ذهبية، قصّة خالدة.'}},
-{id:'set-noir',cat:'sets',price:159,old:189,img:'../Aja_cap_mockup.png',badge:'SET',
+{id:'set-noir',cat:'sets',price:159,old:189,img:'Aja_cap_mockup.png',badge:'SET',
  name:{fr:'Ensemble Noir + Casquette Or',en:'Black Set + Gold Cap',ar:'طقم أسود + قبعة ذهبية'},
  desc:{fr:'Tee + pantalon + casquette brodée.',en:'Tee + pants + embroidered cap.',ar:'تي شيرت + سروال + قبعة مطرزة.'}},
-{id:'set-creme',cat:'sets',price:149,old:179,img:'../Aja_tshirt_mockup.png',badge:'SET',
+{id:'set-creme',cat:'sets',price:149,old:179,img:'Aja_tshirt_mockup.png',badge:'SET',
  name:{fr:'Ensemble Crème Chic',en:'Chic Cream Set',ar:'طقم كريمي شيك'},
  desc:{fr:'Ensemble deux pièces crème, confort luxe.',en:'Two-piece cream set, luxe comfort.',ar:'طقم قطعتين كريمي، راحة فاخرة.'}},
-{id:'cap-or',cat:'access',price:49,old:65,img:'../Aja_cap_mockup.png',badge:'TOP',
+{id:'cap-or',cat:'access',price:49,old:65,img:'Aja_cap_mockup.png',badge:'TOP',
  name:{fr:'Casquette AJÀ Or',en:'AJÀ Gold Cap',ar:'قبعة AJÀ ذهبية'},
  desc:{fr:'Broderie or, réglable, unisexe femme.',en:'Gold embroidery, adjustable.',ar:'تطريز ذهبي، قابلة للتعديل.'}},
-{id:'tote-tag',cat:'access',price:39,old:55,img:'../Aja_accessory_tag.png',badge:'GIFT',
+{id:'tote-tag',cat:'access',price:39,old:55,img:'Aja_accessory_tag.png',badge:'GIFT',
  name:{fr:'Tote Bag + Tag AJÀ',en:'AJÀ Tote Bag + Tag',ar:'حقيبة AJÀ + بطاقة'},
  desc:{fr:'Tote noir + tag doré, idéal cadeau.',en:'Black tote + gold tag, perfect gift.',ar:'حقيبة سوداء + بطاقة ذهبية، مثالية كهدية.'}},
 ];
@@ -36,6 +36,31 @@ const GOVS = ["Tunis","Ariana","Ben Arous","Manouba","Nabeul","Zaghouan","Bizert
 let lang = localStorage.getItem('aja_lang') || 'fr';
 let cart = JSON.parse(localStorage.getItem('aja_cart') || '[]');
 let filter = 'all';
+
+// ---------- Supabase cloud (optionnel, fallback local) ----------
+let ajaCloud = null;
+async function syncProducts(){
+  try{
+    if(!window.AJA_SUPABASE_URL || !window.AJA_SUPABASE_ANON || !window.supabase) return;
+    ajaCloud = window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
+    const {data, error} = await ajaCloud.from('aja_products').select('*').eq('active', true).order('created_at');
+    if(error || !data || !data.length) return;
+    PRODUCTS = data.map(r=>({id:r.id, cat:r.category, price:+r.price, old:+(r.old_price||r.price), img:r.image, badge:r.badge||'',
+      name:{fr:r.name_fr||r.id, en:r.name_en||r.name_fr||r.id, ar:r.name_ar||r.name_fr||r.id},
+      desc:{fr:r.desc_fr||'', en:r.desc_en||'', ar:r.desc_ar||''}}));
+    renderProducts(); renderCart();
+  }catch(e){/* offline → catalogue local */}
+}
+async function pushOrderCloud(order){
+  try{
+    if(!ajaCloud){
+      if(!window.AJA_SUPABASE_URL || !window.AJA_SUPABASE_ANON || !window.supabase) return false;
+      ajaCloud = window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
+    }
+    const {error} = await ajaCloud.from('aja_orders').insert([{id:order.num, customer:{name:order.name, phone:order.phone, gov:order.gov, address:order.address, notes:order.notes}, items:order.items, total:order.total, status:'new'}]);
+    return !error;
+  }catch(e){return false;}
+}
 
 const $ = s => document.querySelector(s);
 const t = k => (I18N[lang] && I18N[lang][k]) || I18N.fr[k] || k;
@@ -122,18 +147,20 @@ $('#productModal').addEventListener('click',e=>{if(e.target.id==='productModal')
 $('#checkoutModal').addEventListener('click',e=>{if(e.target.id==='checkoutModal')e.target.classList.remove('open')});
 $('#newsletter').onsubmit=e=>{e.preventDefault();$('#newsMsg').textContent='✓ Merci! Code: AJA10';$('#newsInput').value='';};
 $('#successClose').onclick=()=>$('#checkoutModal').classList.remove('open');
-$('#checkoutForm').onsubmit=e=>{
+$('#checkoutForm').onsubmit=async e=>{
   e.preventDefault();
   const fd=new FormData(e.target);
   const phone=(fd.get('phone')||'').toString().replace(/\D/g,'');
   if(phone.length<8){alert('Vérifie ton numéro / Check phone / تحقق من الرقم');return;}
   const {total}=cartTotals();
   const num='AJ-'+Math.floor(1000+Math.random()*9000);
+  const order={num,date:new Date().toISOString(),items:cart,total,name:fd.get('name'),phone:fd.get('phone'),gov:fd.get('gov'),address:fd.get('address'),notes:fd.get('notes')};
   const orders=JSON.parse(localStorage.getItem('aja_orders')||'[]');
-  orders.push({num,date:new Date().toISOString(),items:cart,total,name:fd.get('name'),phone:fd.get('phone'),gov:fd.get('gov'),address:fd.get('address'),notes:fd.get('notes')});
+  orders.push(order);
   localStorage.setItem('aja_orders',JSON.stringify(orders));
+  pushOrderCloud(order); // en ligne si possible, sinon copie locale gardée
   $('#orderNum').textContent=num;
   e.target.style.display='none';$('#orderSuccess').style.display='';
   cart=[];saveCart();
 };
-setLang(lang);
+setLang(lang); syncProducts();

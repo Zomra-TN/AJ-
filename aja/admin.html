@@ -3,87 +3,178 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AJÀ — Administration</title>
+<title>AJÀ — Administration en ligne</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css"/>
 <style>
-.admin-wrap{max-width:1000px;margin:30px auto;padding:0 20px}
+.admin-wrap{max-width:1080px;margin:30px auto;padding:0 20px}
 .admin-box{background:#fff;border:1px solid #e6ddc6;border-radius:18px;padding:26px;margin-top:18px}
 .admin-box h2{font-size:30px;margin-bottom:6px}
 table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
 th,td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;vertical-align:top}
 th{background:#111;color:#C9A84C;font-weight:400;letter-spacing:1px}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
 .stat{background:#F5F0E8;border:1px solid #e6ddc6;border-radius:14px;padding:14px;text-align:center}
-.stat strong{font-size:26px;display:block}
-.tabs{display:flex;gap:8px;margin-top:14px}
+.stat strong{font-size:24px;display:block}
+.tabs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 .tab{border:1px solid #d8cfb8;background:#fff;padding:10px 18px;border-radius:999px;cursor:pointer}
 .tab.active{background:#111;color:#fff}
 .hidden{display:none}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4caf50;margin-right:6px}
+.dot.off{background:#c00}
+.pill{font-size:12px;border:1px solid #d8cfb8;border-radius:999px;padding:3px 10px;margin:2px;display:inline-block}
+.rowflex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{width:100%}
+.mini{width:auto;padding:8px 10px}
+@media(max-width:700px){.stat-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<div class="topbar">AJÀ — ESPACE ADMIN</div>
-<header class="header"><a class="logo" href="index.html">AJÀ<span class="logo-sub">ADMIN</span></a><a class="btn btn-dark" href="index.html">← Retour site</a></header>
+<div class="topbar">AJÀ — ESPACE ADMIN EN LIGNE <span id="cloudDot"><span class="dot off"></span>hors ligne</span></div>
+<header class="header"><a class="logo" href="index.html">AJÀ<span class="logo-sub">ADMIN CLOUD</span></a><a class="btn btn-dark" href="index.html">← Retour site</a></header>
 <div class="admin-wrap">
+
 <div id="loginBox" class="admin-box">
 <h2>Connexion admin</h2>
-<p class="muted">Accès réservé. Email autorisé : <strong>ar.asma170@gmail.com</strong></p>
+<p class="muted">Compte : <strong>ar.asma170@gmail.com</strong> (Supabase Auth — marche téléphone + PC)</p>
 <form id="loginForm">
-<label>Email admin<input id="adminEmail" type="email" value="ar.asma170@gmail.com" required/></label>
+<label>Email<input id="adminEmail" type="email" value="ar.asma170@gmail.com" required/></label>
 <label>Mot de passe<input id="adminPass" type="password" placeholder="••••••••" required/></label>
-<button class="btn btn-dark full" type="submit">Se connecter</button>
-<small class="muted">1ère connexion : mot de passe par défaut <strong>Aja2026!</strong> — change-le après.</small>
+<div class="rowflex"><button class="btn btn-dark" type="submit">Se connecter</button><button class="btn btn-gold" type="button" id="signupBtn">Créer le compte</button></div>
 <p id="loginErr" style="color:#a00"></p>
+<small class="muted">1) Clique « Créer le compte » une fois (choisis ton mot de passe). 2) Connecte-toi. 3) Si pas encore admin, la page affichera « compte créé, activation requise » — exécute la ligne SQL fournie puis reconnecte-toi.</small>
 </form>
 </div>
+
 <div id="dashBox" class="admin-box hidden">
-<div class="drawer-head"><h2>Dashboard — <span id="adminWho"></span></h2><button id="logout" class="btn btn-dark">Logout</button></div>
+<div class="drawer-head"><h2>Dashboard — <span id="adminWho"></span></h2><button id="logout" class="btn btn-dark mini">Logout</button></div>
 <div class="stat-grid">
 <div class="stat"><strong id="stOrders">0</strong><span>Commandes</span></div>
-<div class="stat"><strong id="stRevenue">0 DT</strong><span>Revenu (COD)</span></div>
+<div class="stat"><strong id="stRevenue">0 DT</strong><span>Revenu COD</span></div>
 <div class="stat"><strong id="stItems">0</strong><span>Articles</span></div>
+<div class="stat"><strong id="stProds">0</strong><span>Produits</span></div>
 </div>
-<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="settings">Paramètres</button></div>
-<div id="tab-orders"><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" id="exportCsv">Export CSV</button><button class="btn btn-dark" id="clearOrders">Effacer</button></div><div id="ordersTable"></div></div>
-<div id="tab-settings" class="hidden">
-<h3>Changer mot de passe</h3>
-<form id="pwForm"><label>Nouveau mot de passe<input id="newPw" minlength="6" required/></label><button class="btn btn-dark" type="submit">Changer</button></form>
-<p class="muted" style="margin-top:12px">Note : cet admin est local au navigateur (localStorage). Pour un vrai admin partagé entre téléphones + PC avec comptes multiples, on branchera Supabase (comme giftcard-shop). Dis-moi et je le fais.</p>
+<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="products">Produits</button></div>
+<div id="tab-orders">
+<div class="rowflex" style="margin-top:12px"><button class="btn btn-gold mini" id="exportCsv">Export CSV</button><button class="btn btn-dark mini" id="refreshBtn">↻ Actualiser</button><span class="muted" id="rtInfo">temps réel actif</span></div>
+<div id="ordersTable"></div>
+</div>
+<div id="tab-products" class="hidden">
+<h3 style="margin-top:12px">Ajouter un produit</h3>
+<form id="addForm"><div class="f2">
+<label>ID *<input id="npId" required placeholder="ex: robe-ete"/></label>
+<label>Catégorie *<select id="npCat"><option value="tops">tops</option><option value="dresses">dresses</option><option value="sets">sets</option><option value="access">access</option></select></label>
+</div><div class="f2">
+<label>Nom FR *<input id="npFr" required/></label><label>Prix DT *<input id="npPrice" type="number" min="1" required/></label>
+</div><div class="f2">
+<label>Nom EN<input id="npEn"/></label><label>Nom AR<input id="npAr"/></label>
+</div><div class="f2">
+<label>Ancien prix<input id="npOld" type="number" min="0"/></label><label>Image (nom fichier)<input id="npImg" placeholder="hero-model.jpg"/></label>
+</div><label>Badge<input id="npBadge" placeholder="NEW"/></label>
+<button class="btn btn-dark" type="submit">Ajouter</button></form>
+<div id="prodsTable"></div>
 </div>
 </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
-const ADMIN_EMAIL='ar.asma170@gmail.com';
-const DEF_PW='Aja2026!';
-if(!localStorage.getItem('aja_admin_pw')) localStorage.setItem('aja_admin_pw',DEF_PW);
 const $=s=>document.querySelector(s);
-function isLogged(){return sessionStorage.getItem('aja_admin')===ADMIN_EMAIL}
-function showDash(){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=ADMIN_EMAIL;renderOrders();}
-$('#loginForm').onsubmit=e=>{e.preventDefault();
-const em=$('#adminEmail').value.trim().toLowerCase(), pw=$('#adminPass').value;
-if(em!==ADMIN_EMAIL){$('#loginErr').textContent='Email non autorisé. Utilise ar.asma170@gmail.com';return;}
-if(pw!==localStorage.getItem('aja_admin_pw')){$('#loginErr').textContent='Mot de passe incorrect.';return;}
-sessionStorage.setItem('aja_admin',ADMIN_EMAIL);showDash();};
-$('#logout').onclick=()=>{sessionStorage.removeItem('aja_admin');location.reload();};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-settings').classList.toggle('hidden',b.dataset.tab!=='settings');});
-function getOrders(){return JSON.parse(localStorage.getItem('aja_orders')||'[]')}
-function renderOrders(){
-const orders=getOrders();
-$('#stOrders').textContent=orders.length;
-$('#stRevenue').textContent=orders.reduce((s,o)=>s+(o.total||0),0)+' DT';
-$('#stItems').textContent=orders.reduce((s,o)=>s+o.items.reduce((a,i)=>a+i.qty,0),0);
-if(!orders.length){$('#ordersTable').innerHTML='<p class="muted">Aucune commande pour le moment (les commandes passées sur ce navigateur apparaîtront ici).</p>';return;}
-$('#ordersTable').innerHTML='<table><tr><th>N°</th><th>Client</th><th>Articles</th><th>Total</th><th>Date</th></tr>'+orders.slice().reverse().map(o=>`<tr><td><strong>${o.num}</strong><br/><small>${o.gov||''} — ${o.address||''}</small></td><td>${o.name||''}<br/><small>${o.phone||''}</small><br/><small>${o.notes||''}</small></td><td>${o.items.map(i=>`${i.name} (${i.size}) x${i.qty}`).join('<br/>')}</td><td><strong>${o.total} DT</strong><br/><small>COD</small></td><td><small>${(o.date||'').slice(0,16).replace('T',' ')}</small></td></tr>`).join('')+'</table>';
+let sb=null, ORDERS=[], PRODS=[];
+function cloud(){
+  if(sb) return sb;
+  if(!window.AJA_SUPABASE_URL||!window.supabase) return null;
+  sb=window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
+  return sb;
 }
-$('#exportCsv').onclick=()=>{const orders=getOrders();if(!orders.length)return alert('Vide');
-const rows=[['num','name','phone','gov','address','items','total','date']];
-orders.forEach(o=>rows.push([o.num,o.name,o.phone,o.gov,o.address,o.items.map(i=>`${i.name} ${i.size} x${i.qty}`).join(' | '),o.total,o.date]));
-const csv=rows.map(r=>r.map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
-const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();};
-$('#clearOrders').onclick=()=>{if(confirm('Effacer toutes les commandes de ce navigateur ?')){localStorage.removeItem('aja_orders');renderOrders();}};
-$('#pwForm').onsubmit=e=>{e.preventDefault();localStorage.setItem('aja_admin_pw',$('#newPw').value);alert('Mot de passe changé !');$('#newPw').value='';};
-if(isLogged())showDash();
+async function ensureProfile(user){
+  const c=cloud();
+  await c.from('profiles').upsert({id:user.id,email:user.email},{onConflict:'id'});
+  const {data}=await c.from('profiles').select('is_admin').eq('id',user.id).single();
+  return data && data.is_admin===true;
+}
+$('#signupBtn').onclick=async()=>{
+  const em=$('#adminEmail').value.trim(), pw=$('#adminPass').value;
+  if(pw.length<6){$('#loginErr').textContent='Mot de passe : 6 caractères min.';return;}
+  const {data,error}=await cloud().auth.signUp({email:em,password:pw});
+  $('#loginErr').textContent=error?error.message:'Compte créé ! Vérifie ta boîte mail si confirmation demandée, puis connecte-toi.';
+};
+$('#loginForm').onsubmit=async e=>{
+  e.preventDefault();
+  const em=$('#adminEmail').value.trim(), pw=$('#adminPass').value;
+  const {data,error}=await cloud().auth.signInWithPassword({email:em,password:pw});
+  if(error){$('#loginErr').textContent=error.message;return;}
+  const ok=await ensureProfile(data.user);
+  if(!ok){
+    $('#loginErr').textContent='Connecté, mais compte non admin. Exécute dans Supabase SQL : update public.profiles set is_admin = true where email = \''+em+'\'; puis reconnecte-toi.';
+    await cloud().auth.signOut(); return;
+  }
+  sessionStorage.setItem('aja_admin_online',em);
+  showDash(em); loadAll();
+  cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>loadOrders()).subscribe();
+};
+function showDash(em){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=em;$('#cloudDot').innerHTML='<span class="dot"></span>en ligne';}
+$('#logout').onclick=async()=>{await cloud().auth.signOut();sessionStorage.removeItem('aja_admin_online');location.reload();};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-products').classList.toggle('hidden',b.dataset.tab!=='products');});
+async function loadAll(){await loadOrders();await loadProducts();}
+async function loadOrders(){
+  const {data,error}=await cloud().from('aja_orders').select('*').order('created_at',{ascending:false}).limit(200);
+  if(error){$('#ordersTable').innerHTML='<p style="color:#a00">'+error.message+'</p>';return;}
+  ORDERS=data||[];
+  $('#stOrders').textContent=ORDERS.length;
+  $('#stRevenue').textContent=ORDERS.reduce((s,o)=>s+(+o.total||0),0)+' DT';
+  $('#stItems').textContent=ORDERS.reduce((s,o)=>s+(o.items||[]).reduce((a,i)=>a+(+i.qty||0),0),0);
+  $('#ordersTable').innerHTML=ORDERS.length?'<table><tr><th>N°</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr>'+ORDERS.map(o=>{
+    const c=o.customer||{};
+    return `<tr><td><strong>${o.id}</strong><br/><small>${(o.created_at||'').slice(0,16).replace('T',' ')}</small></td>
+    <td>${c.name||''}<br/><small>${c.phone||''} • ${c.gov||''}</small><br/><small>${c.address||''}</small></td>
+    <td>${(o.items||[]).map(i=>`${i.name} (${i.size}) x${i.qty}`).join('<br/>')}</td>
+    <td><strong>${o.total} DT</strong></td>
+    <td><select class="mini" data-st="${o.id}">${['new','called','shipped','delivered','cancelled'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td><button class="mini" data-del="${o.id}">🗑</button></td></tr>`}).join('')+'</table>':'<p class="muted">Aucune commande en ligne pour le moment.</p>';
+  document.querySelectorAll('[data-st]').forEach(s=>s.onchange=async()=>{await cloud().from('aja_orders').update({status:s.value}).eq('id',s.dataset.st);loadOrders();});
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(confirm('Supprimer '+b.dataset.del+' ?')){await cloud().from('aja_orders').delete().eq('id',b.dataset.del);loadOrders();}});
+}
+async function loadProducts(){
+  const {data}=await cloud().from('aja_products').select('*').order('created_at');
+  PRODS=data||[];
+  $('#stProds').textContent=PRODS.length;
+  $('#prodsTable').innerHTML='<table><tr><th>ID</th><th>Nom FR</th><th>Prix</th><th>Actif</th><th></th></tr>'+PRODS.map(p=>`<tr><td><small>${p.id}</small></td><td>${p.name_fr}<br/><small>${p.category} • ${p.badge||''}</small></td>
+  <td><input class="mini" style="width:80px" type="number" data-p="${p.id}" value="${p.price}"/></td>
+  <td><input type="checkbox" data-a="${p.id}" ${p.active?'checked':''}/></td>
+  <td><button class="mini" data-save="${p.id}">💾</button> <button class="mini" data-pdel="${p.id}">🗑</button></td></tr>`).join('')+'</table>';
+  document.querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.save;
+    const price=+document.querySelector(`[data-p="${id}"]`).value;
+    const active=document.querySelector(`[data-a="${id}"]`).checked;
+    await cloud().from('aja_products').update({price,active}).eq('id',id); loadProducts();
+  });
+  document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=async()=>{if(confirm('Supprimer '+b.dataset.pdel+' ?')){await cloud().from('aja_products').delete().eq('id',b.dataset.pdel);loadProducts();}});
+}
+$('#addForm').onsubmit=async e=>{
+  e.preventDefault();
+  const row={id:$('#npId').value.trim(),category:$('#npCat').value,name_fr:$('#npFr').value,name_en:$('#npEn').value||null,name_ar:$('#npAr').value||null,price:+$('#npPrice').value,old_price:+$('#npOld').value||null,image:$('#npImg').value||null,badge:$('#npBadge').value||null,active:true};
+  const {error}=await cloud().from('aja_products').insert([row]);
+  if(error){alert(error.message);return;}
+  e.target.reset(); loadProducts();
+};
+$('#exportCsv').onclick=()=>{
+  if(!ORDERS.length) return alert('Vide');
+  const rows=[['id','name','phone','gov','address','items','total','status','date']];
+  ORDERS.forEach(o=>{const c=o.customer||{};rows.push([o.id,c.name,c.phone,c.gov,c.address,(o.items||[]).map(i=>`${i.name} ${i.size} x${i.qty}`).join(' | '),o.total,o.status,o.created_at]);});
+  const csv=rows.map(r=>r.map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();
+};
+$('#refreshBtn').onclick=loadAll;
+(async()=>{ // restaure session si déjà connectée
+  if(!cloud()){$('#loginErr').textContent='Config cloud manquante (config.js).';return;}
+  const {data}=await cloud().auth.getSession();
+  if(data.session){
+    const ok=await ensureProfile(data.session.user);
+    if(ok){showDash(data.session.user.email);loadAll();
+      cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>loadOrders()).subscribe();}
+  }
+})();
 </script>
 </body>
 </html>
