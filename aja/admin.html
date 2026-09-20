@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AJÀ — Administration</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"/>
+<style>
+.admin-wrap{max-width:1000px;margin:30px auto;padding:0 20px}
+.admin-box{background:#fff;border:1px solid #e6ddc6;border-radius:18px;padding:26px;margin-top:18px}
+.admin-box h2{font-size:30px;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;vertical-align:top}
+th{background:#111;color:#C9A84C;font-weight:400;letter-spacing:1px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.stat{background:#F5F0E8;border:1px solid #e6ddc6;border-radius:14px;padding:14px;text-align:center}
+.stat strong{font-size:26px;display:block}
+.tabs{display:flex;gap:8px;margin-top:14px}
+.tab{border:1px solid #d8cfb8;background:#fff;padding:10px 18px;border-radius:999px;cursor:pointer}
+.tab.active{background:#111;color:#fff}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="topbar">AJÀ — ESPACE ADMIN</div>
+<header class="header"><a class="logo" href="index.html">AJÀ<span class="logo-sub">ADMIN</span></a><a class="btn btn-dark" href="index.html">← Retour site</a></header>
+<div class="admin-wrap">
+<div id="loginBox" class="admin-box">
+<h2>Connexion admin</h2>
+<p class="muted">Accès réservé. Email autorisé : <strong>ar.asma170@gmail.com</strong></p>
+<form id="loginForm">
+<label>Email admin<input id="adminEmail" type="email" value="ar.asma170@gmail.com" required/></label>
+<label>Mot de passe<input id="adminPass" type="password" placeholder="••••••••" required/></label>
+<button class="btn btn-dark full" type="submit">Se connecter</button>
+<small class="muted">1ère connexion : mot de passe par défaut <strong>Aja2026!</strong> — change-le après.</small>
+<p id="loginErr" style="color:#a00"></p>
+</form>
+</div>
+<div id="dashBox" class="admin-box hidden">
+<div class="drawer-head"><h2>Dashboard — <span id="adminWho"></span></h2><button id="logout" class="btn btn-dark">Logout</button></div>
+<div class="stat-grid">
+<div class="stat"><strong id="stOrders">0</strong><span>Commandes</span></div>
+<div class="stat"><strong id="stRevenue">0 DT</strong><span>Revenu (COD)</span></div>
+<div class="stat"><strong id="stItems">0</strong><span>Articles</span></div>
+</div>
+<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="settings">Paramètres</button></div>
+<div id="tab-orders"><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" id="exportCsv">Export CSV</button><button class="btn btn-dark" id="clearOrders">Effacer</button></div><div id="ordersTable"></div></div>
+<div id="tab-settings" class="hidden">
+<h3>Changer mot de passe</h3>
+<form id="pwForm"><label>Nouveau mot de passe<input id="newPw" minlength="6" required/></label><button class="btn btn-dark" type="submit">Changer</button></form>
+<p class="muted" style="margin-top:12px">Note : cet admin est local au navigateur (localStorage). Pour un vrai admin partagé entre téléphones + PC avec comptes multiples, on branchera Supabase (comme giftcard-shop). Dis-moi et je le fais.</p>
+</div>
+</div>
+</div>
+<script>
+const ADMIN_EMAIL='ar.asma170@gmail.com';
+const DEF_PW='Aja2026!';
+if(!localStorage.getItem('aja_admin_pw')) localStorage.setItem('aja_admin_pw',DEF_PW);
+const $=s=>document.querySelector(s);
+function isLogged(){return sessionStorage.getItem('aja_admin')===ADMIN_EMAIL}
+function showDash(){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=ADMIN_EMAIL;renderOrders();}
+$('#loginForm').onsubmit=e=>{e.preventDefault();
+const em=$('#adminEmail').value.trim().toLowerCase(), pw=$('#adminPass').value;
+if(em!==ADMIN_EMAIL){$('#loginErr').textContent='Email non autorisé. Utilise ar.asma170@gmail.com';return;}
+if(pw!==localStorage.getItem('aja_admin_pw')){$('#loginErr').textContent='Mot de passe incorrect.';return;}
+sessionStorage.setItem('aja_admin',ADMIN_EMAIL);showDash();};
+$('#logout').onclick=()=>{sessionStorage.removeItem('aja_admin');location.reload();};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-settings').classList.toggle('hidden',b.dataset.tab!=='settings');});
+function getOrders(){return JSON.parse(localStorage.getItem('aja_orders')||'[]')}
+function renderOrders(){
+const orders=getOrders();
+$('#stOrders').textContent=orders.length;
+$('#stRevenue').textContent=orders.reduce((s,o)=>s+(o.total||0),0)+' DT';
+$('#stItems').textContent=orders.reduce((s,o)=>s+o.items.reduce((a,i)=>a+i.qty,0),0);
+if(!orders.length){$('#ordersTable').innerHTML='<p class="muted">Aucune commande pour le moment (les commandes passées sur ce navigateur apparaîtront ici).</p>';return;}
+$('#ordersTable').innerHTML='<table><tr><th>N°</th><th>Client</th><th>Articles</th><th>Total</th><th>Date</th></tr>'+orders.slice().reverse().map(o=>`<tr><td><strong>${o.num}</strong><br/><small>${o.gov||''} — ${o.address||''}</small></td><td>${o.name||''}<br/><small>${o.phone||''}</small><br/><small>${o.notes||''}</small></td><td>${o.items.map(i=>`${i.name} (${i.size}) x${i.qty}`).join('<br/>')}</td><td><strong>${o.total} DT</strong><br/><small>COD</small></td><td><small>${(o.date||'').slice(0,16).replace('T',' ')}</small></td></tr>`).join('')+'</table>';
+}
+$('#exportCsv').onclick=()=>{const orders=getOrders();if(!orders.length)return alert('Vide');
+const rows=[['num','name','phone','gov','address','items','total','date']];
+orders.forEach(o=>rows.push([o.num,o.name,o.phone,o.gov,o.address,o.items.map(i=>`${i.name} ${i.size} x${i.qty}`).join(' | '),o.total,o.date]));
+const csv=rows.map(r=>r.map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();};
+$('#clearOrders').onclick=()=>{if(confirm('Effacer toutes les commandes de ce navigateur ?')){localStorage.removeItem('aja_orders');renderOrders();}};
+$('#pwForm').onsubmit=e=>{e.preventDefault();localStorage.setItem('aja_admin_pw',$('#newPw').value);alert('Mot de passe changé !');$('#newPw').value='';};
+if(isLogged())showDash();
+</script>
+</body>
+</html>

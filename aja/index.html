@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr" id="htmlRoot">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AJÀ — Authentique • Urbain • Intemporel | Femme</title>
+<meta name="description" content="AJÀ — marque femme. Authentique, Urbain, Intemporel. Paiement à la livraison en Tunisie." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@200;300;400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="../Aja_logo_primary.png" />
+</head>
+<body>
+<div class="topbar"><span data-i18n="topbar">Livraison partout en Tunisie — Paiement à la livraison</span></div>
+
+<header class="header" id="header">
+  <button class="burger" id="burger" aria-label="menu">☰</button>
+  <a class="logo" href="#home">AJÀ<span class="logo-sub">PARIS — SOUL</span></a>
+  <nav class="nav" id="nav">
+    <a href="#home" data-i18n="nav_home">Accueil</a>
+    <a href="#shop" data-i18n="nav_shop">Boutique</a>
+    <a href="#story" data-i18n="nav_story">Notre histoire</a>
+    <a href="#lookbook" data-i18n="nav_look">Lookbook</a>
+    <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    <a href="#contact" data-i18n="nav_contact">Contact</a>
+  </nav>
+  <div class="header-actions">
+    <div class="langs">
+      <button data-lang="fr" class="lang-btn active">FR</button>
+      <button data-lang="en" class="lang-btn">EN</button>
+      <button data-lang="ar" class="lang-btn">AR</button>
+    </div>
+    <button class="cart-btn" id="openCart">👜 <span id="cartCount">0</span></button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-text">
+    <p class="eyebrow">AJÀ • FEMME — AUTHENTIQUE • URBAIN • INTEMPOREL</p>
+    <h1 data-i18n="hero_title">L'élégance intemporelle, pensée pour elle.</h1>
+    <p class="hero-sub" data-i18n="hero_sub">T-shirts oversize, ensembles, robes et accessoires brodés or. Commande en 1 minute, paie à la livraison.</p>
+    <div class="hero-cta">
+      <a href="#shop" class="btn btn-dark" data-i18n="hero_cta1">Découvrir la collection</a>
+      <a href="#shop" class="btn btn-gold" data-i18n="hero_cta2">Paiement à la livraison</a>
+    </div>
+    <div class="hero-trust">
+      <div><strong>24</strong><span data-i18n="trust1">gouvernorats livrés</span></div>
+      <div><strong>7j</strong><span data-i18n="trust2">échange facile</span></div>
+      <div><strong>COD</strong><span data-i18n="trust3">paie à la porte</span></div>
+    </div>
+  </div>
+  <div class="hero-img">
+    <img src="hero-model.jpg" alt="AJÀ campagne femme" />
+    <div class="hero-card">
+      <img src="../Aja_tshirt_mockup.png" alt="T-shirt AJÀ" />
+      <div><p class="mini-title">BEST-SELLER</p><p><strong>Tee Oversize AJÀ — 79 DT</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee"><span>AUTHENTIQUE • URBAIN • INTEMPOREL • AJÀ FEMME • PAIEMENT À LA LIVRAISON •&nbsp;</span><span>AUTHENTIQUE • URBAIN • INTEMPOREL • AJÀ FEMME • PAIEMENT À LA LIVRAISON •&nbsp;</span></div>
+
+<!-- CATEGORIES -->
+<section class="section" id="categories">
+  <h2 data-i18n="cat_title">Nos univers femme</h2>
+  <div class="cats">
+    <button class="cat active" data-filter="all" data-i18n="cat_all">Tout</button>
+    <button class="cat" data-filter="tops" data-i18n="cat_tops">Tops & T-shirts</button>
+    <button class="cat" data-filter="dresses" data-i18n="cat_dresses">Robes</button>
+    <button class="cat" data-filter="sets" data-i18n="cat_sets">Ensembles</button>
+    <button class="cat" data-filter="access" data-i18n="cat_access">Accessoires</button>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section class="section shop" id="shop">
+  <div class="shop-head">
+    <h2 data-i18n="shop_title">La Boutique</h2>
+    <p data-i18n="shop_sub">Tailles XS à XL • Stock limité • Broderie or</p>
+  </div>
+  <div class="grid" id="productGrid"></div>
+</section>
+
+<!-- STORY -->
+<section class="story" id="story">
+  <div class="story-img"><img src="hero-model.jpg" alt="AJÀ story" /></div>
+  <div class="story-text">
+    <p class="eyebrow gold">PARIS — SOUL</p>
+    <h2 data-i18n="story_title">Authentique. Urbain. Intemporel.</h2>
+    <p data-i18n="story_p1">AJÀ est née entre Paris et Tunis, pour les femmes qui veulent du simple, du beau, du durable. Coupe oversize, coton lourd, broderie or feuille de laurier.</p>
+    <p data-i18n="story_p2">Chaque pièce est pensée pour le quotidien : ville, soleil, sorties. Noir profond, crème doux, or délicat.</p>
+    <ul class="values">
+      <li>✦ <span data-i18n="v1">Coton premium 240g</span></li>
+      <li>✦ <span data-i18n="v2">Broderie or faite main</span></li>
+      <li>✦ <span data-i18n="v3">Tailles pensées femmes</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- LOOKBOOK -->
+<section class="section" id="lookbook">
+  <h2 data-i18n="look_title">Lookbook</h2>
+  <p class="center muted" data-i18n="look_sub">Porte-le à ta façon — ville, plage, soir.</p>
+  <div class="look-grid">
+    <img src="hero-model.jpg" alt="look 1" />
+    <img src="../Aja_tshirt_mockup.png" alt="look 2" />
+    <img src="../Aja_cap_mockup.png" alt="look 3" />
+    <img src="../Aja_accessory_tag.png" alt="look 4" />
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="section reviews">
+  <h2 data-i18n="rev_title">Elles en parlent</h2>
+  <div class="rev-grid">
+    <div class="rev"><p>★★★★★</p><p data-i18n="r1">« Qualité wooo ! T-shirt oversize parfait, livraison à Sfax en 2 jours, payée à la porte. »</p><strong>— Yasmine, Sfax</strong></div>
+    <div class="rev"><p>★★★★★</p><p data-i18n="r2">« La broderie dorée est trop fine. La robe crème me va trop bien. »</p><strong>— Amira, Tunis</strong></div>
+    <div class="rev"><p>★★★★★</p><p data-i18n="r3">« Service WhatsApp rapide, échange de taille sans problème. »</p><strong>— Syrine, Sousse</strong></div>
+  </div>
+</section>
+
+<!-- FAQ COD -->
+<section class="section faq" id="faq">
+  <h2 data-i18n="faq_title">Paiement à la livraison — comment ça marche ?</h2>
+  <div class="faq-list">
+    <details open><summary data-i18n="q1">Comment commander ?</summary><p data-i18n="a1">Choisis tes articles + taille, clique Panier → Commander, remplis nom, téléphone et adresse. On t'appelle pour confirmer.</p></details>
+    <details><summary data-i18n="q2">Combien la livraison ?</summary><p data-i18n="a2">7 DT Grand Tunis, 8 DT reste Tunisie. Offerte dès 200 DT d'achat.</p></details>
+    <details><summary data-i18n="q3">Puis-je vérifier avant de payer ?</summary><p data-i18n="a3">Oui. Tu paies en cash à la livraison après vérification rapide du colis. Échange sous 7 jours.</p></details>
+    <details><summary data-i18n="q4">Paiement en ligne ?</summary><p data-i18n="a4">Bientôt e-Dinar / carte. Pour le moment : cash à la livraison uniquement, simple et sécurisé.</p></details>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section contact" id="contact">
+  <h2 data-i18n="contact_title">Contact</h2>
+  <div class="contact-grid">
+    <div>
+      <p><strong>WhatsApp :</strong> <a href="https://wa.me/21600000000" target="_blank">+216 00 000 000</a></p>
+      <p><strong>Instagram :</strong> <a href="#" target="_blank">@aja.paris.soul</a></p>
+      <p><strong>Email :</strong> hello@aja-brand.com</p>
+      <p class="muted" data-i18n="contact_h">Réponse en < 2h, 9h–22h, 7j/7</p>
+    </div>
+    <form id="newsletter" class="news">
+      <label data-i18n="news_l">-10% sur ta 1ère commande :</label>
+      <div class="news-row"><input id="newsInput" type="tel" placeholder="N° téléphone / WhatsApp" required /><button class="btn btn-dark" type="submit">OK</button></div>
+      <small id="newsMsg"></small>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">AJÀ</div>
+  <p>AUTHENTIQUE • URBAIN • INTEMPOREL — PARIS SOUL</p>
+  <p class="muted">© 2026 AJÀ Brand — <span data-i18n="rights">Tous droits réservés</span> — <a href="admin.html" style="text-decoration:underline">Admin</a></p>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="cartDrawer">
+  <div class="drawer-head"><h3 data-i18n="cart">Panier</h3><button id="closeCart">✕</button></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="drawer-foot">
+    <div class="row"><span data-i18n="subtotal">Sous-total</span><strong id="subtotal">0 DT</strong></div>
+    <div class="row"><span data-i18n="delivery">Livraison</span><strong id="shipCost">7 DT</strong></div>
+    <div class="row total"><span>Total</span><strong id="grandTotal">0 DT</strong></div>
+    <small class="muted" data-i18n="free_ship">Livraison offerte dès 200 DT</small>
+    <button class="btn btn-gold full" id="goCheckout" data-i18n="order_btn">Commander — Paiement à la livraison</button>
+    <a class="btn btn-dark full" id="waOrder" target="_blank" href="#">WhatsApp</a>
+  </div>
+</aside>
+
+<!-- PRODUCT MODAL -->
+<div class="modal" id="productModal"><div class="modal-box" id="productBox"></div></div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal" id="checkoutModal">
+  <div class="modal-box">
+    <div class="drawer-head"><h3 data-i18n="checkout">Finaliser commande — Paiement à la livraison</h3><button id="closeCheckout">✕</button></div>
+    <form id="checkoutForm">
+      <div class="f2">
+        <label><span data-i18n="f_name">Nom complet *</span><input name="name" required placeholder="Ex: Mariem Ben Ali" /></label>
+        <label><span data-i18n="f_phone">Téléphone *</span><input name="phone" required inputmode="numeric" placeholder="Ex: 20 123 456" /></label>
+      </div>
+      <div class="f2">
+        <label><span data-i18n="f_gov">Gouvernorat *</span><select name="gov" id="govSelect" required></select></label>
+        <label><span data-i18n="f_city">Ville / Adresse *</span><input name="address" required placeholder="Rue, immeuble..." /></label>
+      </div>
+      <label><span data-i18n="f_notes">Notes (taille, couleur...)</span><textarea name="notes" rows="2"></textarea></label>
+      <div class="paybox">
+        <label class="pay active"><input type="radio" name="pay" checked /> 💵 <span data-i18n="cod">Cash à la livraison</span></label>
+        <label class="pay disabled"><input type="radio" disabled /> 💳 e-Dinar / Carte <em data-i18n="soon">bientôt</em></label>
+      </div>
+      <div class="row total"><span>Total à payer à la livraison</span><strong id="checkoutTotal">0 DT</strong></div>
+      <button class="btn btn-dark full" type="submit" data-i18n="confirm">Confirmer la commande</button>
+      <p class="muted center" data-i18n="confirm_sub">On t'appelle pour confirmer avant expédition.</p>
+    </form>
+    <div id="orderSuccess" style="display:none" class="success">
+      <h3>✓ <span data-i18n="succ_t">Merci ! Commande reçue.</span></h3>
+      <p><span data-i18n="succ_n">N° commande :</span> <strong id="orderNum"></strong></p>
+      <p data-i18n="succ_p">Garde ton téléphone ouvert, on t'appelle très vite pour confirmer. Paiement en cash à la réception.</p>
+      <button class="btn btn-gold full" id="successClose">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
