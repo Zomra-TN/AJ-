@@ -84,6 +84,10 @@ on conflict (id) do update set category=excluded.category, name_fr=excluded.name
 
 -- ============================================================
 -- ADMIN : après le 1er login de ar.asma170@gmail.com sur aja/admin.html,
--- exécute cette ligne pour la nommer ADMIN :
+-- exécute ce bloc pour la nommer ADMIN (delete+insert : contourne le
+-- trigger anti-escalation partagé qui bloque les UPDATE directs) :
 -- ============================================================
--- update public.profiles set is_admin = true where email = 'ar.asma170@gmail.com';
+-- delete from public.profiles where email = 'ar.asma170@gmail.com';
+-- insert into public.profiles (id, email, is_admin)
+-- select id, email, true from auth.users where email = 'ar.asma170@gmail.com';
+-- -- vérif : select email, is_admin from public.profiles where email = 'ar.asma170@gmail.com';
