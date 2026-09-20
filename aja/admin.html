@@ -54,7 +54,7 @@ input,select,textarea{width:100%}
 <div class="stat"><strong id="stItems">0</strong><span>Articles</span></div>
 <div class="stat"><strong id="stProds">0</strong><span>Produits</span></div>
 </div>
-<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="clients">Clients</button><button class="tab" data-tab="products">Produits</button></div>
+<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="clients">Clients</button><button class="tab" data-tab="support">Support 💬 <span id="supDot" style="display:none">●</span></button><button class="tab" data-tab="products">Produits</button></div>
 <div id="tab-orders">
 <div class="rowflex" style="margin-top:12px"><button class="btn btn-gold mini" id="exportCsv">Export CSV</button><button class="btn btn-dark mini" id="refreshBtn">↻ Actualiser</button><span class="muted" id="rtInfo">temps réel actif</span></div>
 <div id="ordersTable"></div>
@@ -62,6 +62,14 @@ input,select,textarea{width:100%}
 <div id="tab-clients" class="hidden">
 <div class="rowflex" style="margin-top:12px"><button class="btn btn-dark mini" id="refreshClients">↻ Actualiser</button><span class="muted">Clique « voir » pour filtrer ses commandes.</span></div>
 <div id="clientsTable"></div>
+</div>
+<div id="tab-support" class="hidden">
+<div class="rowflex" style="margin-top:12px"><button class="btn btn-dark mini" id="refreshSup">↻ Actualiser</button></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:12px;margin-top:10px">
+<div id="threads"></div>
+<div><div id="threadMsgs" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;background:#F5F0E8;border:1px solid #e6ddc6;border-radius:12px;padding:12px"></div>
+<form id="replyForm" style="display:flex;gap:8px;margin-top:8px"><input id="replyInput" required placeholder="Répondre..." style="flex:1"/><button class="btn btn-gold mini" type="submit">➤</button></form></div>
+</div>
 </div>
 <div id="tab-products" class="hidden">
 <h3 style="margin-top:12px">Ajouter un produit</h3>
@@ -115,12 +123,12 @@ $('#loginForm').onsubmit=async e=>{
   }
   sessionStorage.setItem('aja_admin_online',em);
   showDash(em); loadAll();
-  cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>loadOrders()).subscribe();
+  cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>{loadOrders();loadClients();}).on('postgres_changes',{event:'*',schema:'public',table:'aja_messages'},()=>loadSupport()).subscribe();
 };
 function showDash(em){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=em;$('#cloudDot').innerHTML='<span class="dot"></span>en ligne';}
 $('#logout').onclick=async()=>{await cloud().auth.signOut();sessionStorage.removeItem('aja_admin_online');location.reload();};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-clients').classList.toggle('hidden',b.dataset.tab!=='clients');$('#tab-products').classList.toggle('hidden',b.dataset.tab!=='products');});
-async function loadAll(){await loadOrders();await loadClients();await loadProducts();}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-clients').classList.toggle('hidden',b.dataset.tab!=='clients');$('#tab-support').classList.toggle('hidden',b.dataset.tab!=='support');$('#tab-products').classList.toggle('hidden',b.dataset.tab!=='products');});
+async function loadAll(){await loadOrders();await loadClients();await loadSupport();await loadProducts();}
 let CLIENTS=[];
 async function loadClients(){
   const {data, error} = await cloud().from('profiles').select('id,email,phone,created_at').order('created_at',{ascending:false}).limit(300);
@@ -146,6 +154,48 @@ async function loadClients(){
   });
 }
 $('#refreshClients').onclick=loadClients;
+
+// ---------- Support chat ----------
+let MSGS=[], ACTIVE_THREAD=null;
+async function loadSupport(){
+  const {data, error} = await cloud().from('aja_messages').select('*').order('created_at',{ascending:false}).limit(400);
+  if(error){ $('#threads').innerHTML='<p style="color:#a00">'+error.message+'</p>'; return; }
+  MSGS = data||[];
+  const byUser = {};
+  MSGS.forEach(m=>{ (byUser[m.user_id]=byUser[m.user_id]||[]).push(m); });
+  const ids = Object.keys(byUser);
+  let mails = {};
+  if(ids.length){
+    const {data:profs} = await cloud().from('profiles').select('id,email').in('id', ids);
+    (profs||[]).forEach(p=>mails[p.id]=p.email);
+  }
+  const unreadTotal = MSGS.filter(m=>m.sender==='client'&&!m.is_read).length;
+  $('#supDot').style.display = unreadTotal?'':'none';
+  $('#threads').innerHTML = ids.length ? ids.map(id=>{
+    const un = byUser[id].filter(m=>m.sender==='client'&&!m.is_read).length;
+    const last = byUser[id][0];
+    return `<button class="tab ${ACTIVE_THREAD===id?'active':''}" style="display:block;width:100%;text-align:left;margin-bottom:6px" data-th="${id}">${mails[id]||id.slice(0,8)} ${un?`(${un}●)`:''}<br/><small>${(last.text||'').slice(0,28)}</small></button>`;
+  }).join('') : '<p class="muted">Aucun message.</p>';
+  document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{ ACTIVE_THREAD=b.dataset.th; loadSupport(); });
+  renderThread(mails);
+}
+function renderThread(mails){
+  const box=$('#threadMsgs');
+  if(!ACTIVE_THREAD){ box.innerHTML='<p class="muted">Sélectionne une conversation.</p>'; return; }
+  const list = MSGS.filter(m=>m.user_id===ACTIVE_THREAD).slice().reverse();
+  box.innerHTML = list.map(m=>`<div class="bubble ${m.sender}"><small>${m.sender==='client'?(mails[m.user_id]||'client'):'AJÀ'} • ${(m.created_at||'').slice(5,16).replace('T',' ')}</small><br/>${m.text}</div>`).join('')||'<p class="muted">Vide.</p>';
+  box.scrollTop=box.scrollHeight;
+  cloud().from('aja_messages').update({is_read:true}).eq('user_id',ACTIVE_THREAD).eq('sender','client').then(()=>{});
+}
+$('#replyForm').onsubmit=async e=>{
+  e.preventDefault();
+  if(!ACTIVE_THREAD) return alert('Sélectionne une conversation.');
+  const txt=$('#replyInput').value.trim(); if(!txt) return;
+  $('#replyInput').value='';
+  await cloud().from('aja_messages').insert([{user_id:ACTIVE_THREAD, sender:'admin', text:txt, is_read:true}]);
+  loadSupport();
+};
+$('#refreshSup').onclick=loadSupport;
 async function loadOrders(){
   const {data,error}=await cloud().from('aja_orders').select('*').order('created_at',{ascending:false}).limit(200);
   if(error){$('#ordersTable').innerHTML='<p style="color:#a00">'+error.message+'</p>';return;}
@@ -201,7 +251,7 @@ $('#refreshBtn').onclick=loadAll;
   if(data.session){
     const ok=await ensureProfile(data.session.user);
     if(ok){showDash(data.session.user.email);loadAll();
-      cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>loadOrders()).subscribe();}
+      cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>{loadOrders();loadClients();}).on('postgres_changes',{event:'*',schema:'public',table:'aja_messages'},()=>loadSupport()).subscribe();}
   }
 })();
 </script>

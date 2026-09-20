@@ -218,14 +218,52 @@ $('#signupBtn2').onclick=async()=>{
     $('#authErr').textContent='✓ Compte créé ! Connecte-toi maintenant.';
   } else { $('#authErr').textContent='Vérifie ta boîte mail puis connecte-toi.'; }
 };
-$('#googleBtn').onclick=async()=>{
-  const c = ajaClient(); if(!c) return;
-  const {error} = await c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}});
-  if(error) $('#authErr').textContent = error.message + ' (active Google dans Supabase > Auth > Providers)';
+$('#logoutBtn').onclick=async()=>{ const c=ajaClient(); if(c) await c.auth.signOut(); refreshMe(); checkChatDot(); };
+
+// ---------- Chat support ----------
+let chatUid=null, chatChannel=null;
+async function openChat(){
+  const c=ajaClient(); if(!c) return;
+  let u=null; try{ const {data}=await c.auth.getSession(); u=data.session?data.session.user:null; }catch(e){}
+  $('#chatModal').classList.add('open');
+  if(!u){ $('#chatLogin').style.display=''; $('#chatBox').style.display='none'; return; }
+  $('#chatLogin').style.display='none'; $('#chatBox').style.display='';
+  chatUid=u.id; loadChat(); subscribeChat();
+}
+async function loadChat(){
+  const box=$('#chatMsgs'); if(!box||!chatUid) return;
+  try{
+    const {data} = await ajaClient().from('aja_messages').select('*').eq('user_id',chatUid).order('created_at');
+    box.innerHTML = (data||[]).map(m=>`<div class="bubble ${m.sender}">${m.text}<br/><small>${(m.created_at||'').slice(5,16).replace('T',' ')}</small></div>`).join('') || '<p class="muted">Dis-nous tout, on répond vite ♥</p>';
+    box.scrollTop = box.scrollHeight;
+    const unread = (data||[]).filter(m=>m.sender==='admin' && !m.is_read).length;
+    $('#supportDot').style.display = unread ? '' : 'none';
+  }catch(e){}
+}
+function subscribeChat(){
+  try{
+    const c=ajaClient();
+    if(chatChannel) c.removeChannel(chatChannel);
+    chatChannel=c.channel('aja-chat-'+chatUid).on('postgres_changes',{event:'INSERT',schema:'public',table:'aja_messages',filter:'user_id=eq.'+chatUid},()=>loadChat()).subscribe();
+  }catch(e){}
+}
+async function checkChatDot(){
+  try{
+    const c=ajaClient(); if(!c) return;
+    const {data} = await c.auth.getSession(); const u=data.session?data.session.user:null; if(!u) return;
+    const r = await c.from('aja_messages').select('id',{count:'exact',head:true}).eq('user_id',u.id).eq('sender','admin').eq('is_read',false);
+    $('#supportDot').style.display = (r.count||0) ? '' : 'none';
+  }catch(e){}
+}
+$('#supportBtn').onclick=openChat;
+$('#closeChat').onclick=()=>$('#chatModal').classList.remove('open');
+$('#chatModal').addEventListener('click',e=>{ if(e.target.id==='chatModal') e.target.classList.remove('open'); });
+$('#chatGoLogin').onclick=()=>{ $('#chatModal').classList.remove('open'); $('#authModal').classList.add('open'); refreshMe(); };
+$('#chatForm').onsubmit=async e=>{
+  e.preventDefault();
+  const txt=$('#chatInput').value.trim(); if(!txt||!chatUid) return;
+  $('#chatInput').value='';
+  try{ await ajaClient().from('aja_messages').insert([{user_id:chatUid, sender:'client', text:txt}]); }catch(err){}
+  loadChat();
 };
-$('#fbBtn').onclick=async()=>{
-  const c = ajaClient(); if(!c) return;
-  const {error} = await c.auth.signInWithOAuth({provider:'facebook', options:{redirectTo:location.href}});
-  if(error) $('#authErr').textContent = error.message + ' (active Facebook dans Supabase > Auth > Providers)';
-};
-$('#logoutBtn').onclick=async()=>{ const c=ajaClient(); if(c) await c.auth.signOut(); refreshMe(); };
+checkChatDot();

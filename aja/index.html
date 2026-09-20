@@ -32,6 +32,7 @@
     </div>
     <button class="cart-btn" id="openCart">👜 <span id="cartCount">0</span></button>
     <button class="cart-btn" id="accountBtn" style="background:#fff;color:#111">👤 <span id="accountLabel">Compte</span></button>
+    <button class="cart-btn" id="supportBtn" style="background:var(--gold);border-color:var(--gold);color:#111">💬 <span id="supportDot" style="display:none">●</span></button>
   </div>
 </header>
 
@@ -210,11 +211,6 @@
   <div class="modal-box" style="max-width:480px">
     <div class="drawer-head"><h3>👤 <span>Créer un compte / Se connecter</span></h3><button id="closeAuth">✕</button></div>
     <div id="authLoggedOut">
-      <div class="paybox" style="flex-direction:column">
-        <button class="pay" id="googleBtn" style="justify-content:center;cursor:pointer">🔵 Continuer avec Google (Gmail)</button>
-        <button class="pay" id="fbBtn" style="justify-content:center;cursor:pointer">📘 Continuer avec Facebook</button>
-      </div>
-      <p class="muted center" style="margin:10px 0">— ou par email —</p>
       <form id="authForm">
         <label>Email<input id="authEmail" type="email" required placeholder="ton@email.com"/></label>
         <label>Mot de passe (6+ caractères)<input id="authPw" type="password" minlength="6" required/></label>
@@ -232,6 +228,19 @@
       <h4 style="margin-top:12px">Mes commandes</h4>
       <div id="myOrders"></div>
       <button class="btn btn-dark full" id="logoutBtn">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT SUPPORT MODAL -->
+<div class="modal" id="chatModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="drawer-head"><h3>💬 Chat avec le support</h3><button id="closeChat">✕</button></div>
+    <div id="chatLogin" style="display:none"><p class="muted">Connecte-toi pour discuter avec le support.</p><button class="btn btn-dark full" id="chatGoLogin">Se connecter / Créer un compte</button></div>
+    <div id="chatBox" style="display:none">
+      <div id="chatMsgs" style="max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin:10px 0"></div>
+      <form id="chatForm" style="display:flex;gap:8px"><input id="chatInput" required placeholder="Écris ton message..." style="flex:1"/><button class="btn btn-gold" type="submit">➤</button></form>
+      <p class="muted center"><small>Ou WhatsApp direct : <a href="https://wa.me/21600000000">+216 00 000 000</a></small></p>
     </div>
   </div>
 </div>
