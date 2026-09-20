@@ -54,10 +54,14 @@ input,select,textarea{width:100%}
 <div class="stat"><strong id="stItems">0</strong><span>Articles</span></div>
 <div class="stat"><strong id="stProds">0</strong><span>Produits</span></div>
 </div>
-<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="products">Produits</button></div>
+<div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="clients">Clients</button><button class="tab" data-tab="products">Produits</button></div>
 <div id="tab-orders">
 <div class="rowflex" style="margin-top:12px"><button class="btn btn-gold mini" id="exportCsv">Export CSV</button><button class="btn btn-dark mini" id="refreshBtn">↻ Actualiser</button><span class="muted" id="rtInfo">temps réel actif</span></div>
 <div id="ordersTable"></div>
+</div>
+<div id="tab-clients" class="hidden">
+<div class="rowflex" style="margin-top:12px"><button class="btn btn-dark mini" id="refreshClients">↻ Actualiser</button><span class="muted">Clique « voir » pour filtrer ses commandes.</span></div>
+<div id="clientsTable"></div>
 </div>
 <div id="tab-products" class="hidden">
 <h3 style="margin-top:12px">Ajouter un produit</h3>
@@ -115,8 +119,33 @@ $('#loginForm').onsubmit=async e=>{
 };
 function showDash(em){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=em;$('#cloudDot').innerHTML='<span class="dot"></span>en ligne';}
 $('#logout').onclick=async()=>{await cloud().auth.signOut();sessionStorage.removeItem('aja_admin_online');location.reload();};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-products').classList.toggle('hidden',b.dataset.tab!=='products');});
-async function loadAll(){await loadOrders();await loadProducts();}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#tab-orders').classList.toggle('hidden',b.dataset.tab!=='orders');$('#tab-clients').classList.toggle('hidden',b.dataset.tab!=='clients');$('#tab-products').classList.toggle('hidden',b.dataset.tab!=='products');});
+async function loadAll(){await loadOrders();await loadClients();await loadProducts();}
+let CLIENTS=[];
+async function loadClients(){
+  const {data, error} = await cloud().from('profiles').select('id,email,phone,created_at').order('created_at',{ascending:false}).limit(300);
+  if(error){ $('#clientsTable').innerHTML='<p style="color:#a00">'+error.message+'</p>'; return; }
+  CLIENTS = data||[];
+  const byUser = {};
+  ORDERS.forEach(o=>{ if(!o.user_id) return; (byUser[o.user_id] = byUser[o.user_id]||[]).push(o); });
+  const guests = ORDERS.filter(o=>!o.user_id).length;
+  $('#clientsTable').innerHTML = `<p class="muted">Comptes : <strong>${CLIENTS.length}</strong> • Commandes invités (sans compte) : <strong>${guests}</strong></p>` +
+  (CLIENTS.length?'<table><tr><th>Client</th><th>Tél</th><th>Cmds</th><th>Total</th><th></th></tr>'+CLIENTS.map(p=>{
+    const os = byUser[p.id]||[];
+    const tot = os.reduce((s,o)=>s+(+o.total||0),0);
+    return `<tr><td>${p.email||''}<br/><small>${(p.created_at||'').slice(0,10)}</small></td><td>${p.phone||''}</td><td><strong>${os.length}</strong></td><td>${tot} DT</td><td><button class="mini" data-see="${p.id}">voir</button> <a class="mini" style="border:1px solid #d8cfb8;border-radius:8px;padding:6px 8px" target="_blank" href="https://wa.me/${(p.phone||'').replace(/\D/g,'')}">WhatsApp</a></td></tr>`;
+  }).join('')+'</table>':'<p class="muted">Aucun compte client pour le moment.</p>');
+  document.querySelectorAll('[data-see]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.see;
+    document.querySelector('[data-tab="orders"]').click();
+    const rows=[...document.querySelectorAll('#ordersTable table tr')];
+    rows.slice(1).forEach(tr=>{ tr.style.display = ''; });
+    const os=new Set(ORDERS.filter(o=>o.user_id===id).map(o=>o.id));
+    const tds=[...document.querySelectorAll('#ordersTable table tr td:first-child')];
+    tds.forEach(td=>{ const num=(td.querySelector('strong')||{}).textContent||''; if(!os.has(num)) td.parentElement.style.display='none'; });
+  });
+}
+$('#refreshClients').onclick=loadClients;
 async function loadOrders(){
   const {data,error}=await cloud().from('aja_orders').select('*').order('created_at',{ascending:false}).limit(200);
   if(error){$('#ordersTable').innerHTML='<p style="color:#a00">'+error.message+'</p>';return;}

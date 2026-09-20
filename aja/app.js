@@ -57,9 +57,37 @@ async function pushOrderCloud(order){
       if(!window.AJA_SUPABASE_URL || !window.AJA_SUPABASE_ANON || !window.supabase) return false;
       ajaCloud = window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
     }
-    const {error} = await ajaCloud.from('aja_orders').insert([{id:order.num, customer:{name:order.name, phone:order.phone, gov:order.gov, address:order.address, notes:order.notes}, items:order.items, total:order.total, status:'new'}]);
+    let uid = null;
+    try{ const {data} = await ajaCloud.auth.getUser(); uid = data.user ? data.user.id : null; }catch(e){}
+    const {error} = await ajaCloud.from('aja_orders').insert([{id:order.num, user_id:uid, customer:{name:order.name, phone:order.phone, gov:order.gov, address:order.address, notes:order.notes}, items:order.items, total:order.total, status:'new'}]);
     return !error;
   }catch(e){return false;}
+}
+
+// ---------- Comptes clients ----------
+function ajaClient(){
+  if(!window.AJA_SUPABASE_URL || !window.AJA_SUPABASE_ANON || !window.supabase) return null;
+  if(!ajaCloud) ajaCloud = window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
+  return ajaCloud;
+}
+async function loadMyOrders(uid){
+  const box = $('#myOrders'); if(!box) return;
+  try{
+    const {data, error} = await ajaClient().from('aja_orders').select('id,total,status,created_at').eq('user_id', uid).order('created_at', {ascending:false}).limit(20);
+    if(error || !data || !data.length){ box.innerHTML = '<p class="muted">Aucune commande liée à ce compte pour le moment.</p>'; return; }
+    box.innerHTML = data.map(o=>`<div class="cart-item"><div><strong>${o.id}</strong><br/><small>${(o.created_at||'').slice(0,10)} • ${o.status}</small></div><strong>${o.total} DT</strong></div>`).join('');
+  }catch(e){ box.innerHTML = '<p class="muted">Hors ligne.</p>'; }
+}
+async function refreshMe(){
+  const c = ajaClient(); if(!c) return;
+  let u = null;
+  try{ const {data} = await c.auth.getSession(); u = data.session ? data.session.user : null; }catch(e){}
+  $('#accountLabel').textContent = u ? (u.email||'Me').split('@')[0] : (lang==='ar'?'حساب':(lang==='en'?'Account':'Compte'));
+  if(!u){ $('#authLoggedOut').style.display=''; $('#authLoggedIn').style.display='none'; return; }
+  $('#authLoggedOut').style.display='none'; $('#authLoggedIn').style.display='';
+  $('#meEmail').textContent = u.email||'';
+  try{ await c.from('profiles').upsert({id:u.id, email:u.email}, {onConflict:'id'}); }catch(e){}
+  loadMyOrders(u.id);
 }
 
 const $ = s => document.querySelector(s);
@@ -163,4 +191,41 @@ $('#checkoutForm').onsubmit=async e=>{
   e.target.style.display='none';$('#orderSuccess').style.display='';
   cart=[];saveCart();
 };
-setLang(lang); syncProducts();
+setLang(lang); syncProducts(); refreshMe();
+
+// --- Auth modal wiring ---
+$('#accountBtn').onclick=()=>{ $('#authModal').classList.add('open'); refreshMe(); };
+$('#closeAuth').onclick=()=>$('#authModal').classList.remove('open');
+$('#authModal').addEventListener('click',e=>{ if(e.target.id==='authModal') e.target.classList.remove('open'); });
+$('#authForm').onsubmit=async e=>{
+  e.preventDefault();
+  const c = ajaClient(); if(!c){ $('#authErr').textContent='Cloud non configuré.'; return; }
+  const em=$('#authEmail').value.trim(), pw=$('#authPw').value;
+  const {data, error} = await c.auth.signInWithPassword({email:em, password:pw});
+  if(error){ $('#authErr').textContent = error.message; return; }
+  $('#authErr').textContent='';
+  try{ await c.from('profiles').upsert({id:data.user.id, email:em}, {onConflict:'id'}); }catch(err){}
+  refreshMe();
+};
+$('#signupBtn2').onclick=async()=>{
+  const c = ajaClient(); if(!c){ $('#authErr').textContent='Cloud non configuré.'; return; }
+  const em=$('#authEmail').value.trim(), pw=$('#authPw').value, ph=$('#authPhone').value.trim();
+  if(pw.length<6){ $('#authErr').textContent='Mot de passe : 6 caractères min.'; return; }
+  const {data, error} = await c.auth.signUp({email:em, password:pw});
+  if(error){ $('#authErr').textContent = error.message; return; }
+  if(data.user){
+    try{ await c.from('profiles').upsert({id:data.user.id, email:em, phone:ph||null}, {onConflict:'id'}); }catch(err){}
+    $('#authErr').textContent='✓ Compte créé ! Connecte-toi maintenant.';
+  } else { $('#authErr').textContent='Vérifie ta boîte mail puis connecte-toi.'; }
+};
+$('#googleBtn').onclick=async()=>{
+  const c = ajaClient(); if(!c) return;
+  const {error} = await c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}});
+  if(error) $('#authErr').textContent = error.message + ' (active Google dans Supabase > Auth > Providers)';
+};
+$('#fbBtn').onclick=async()=>{
+  const c = ajaClient(); if(!c) return;
+  const {error} = await c.auth.signInWithOAuth({provider:'facebook', options:{redirectTo:location.href}});
+  if(error) $('#authErr').textContent = error.message + ' (active Facebook dans Supabase > Auth > Providers)';
+};
+$('#logoutBtn').onclick=async()=>{ const c=ajaClient(); if(c) await c.auth.signOut(); refreshMe(); };
