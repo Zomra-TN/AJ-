@@ -1,3 +1,3 @@
 // AJÀ — projet Supabase dédié (base indépendante)
-window.AJA_SUPABASE_URL="https://sufqelfyaxigyyjkivyl.supabase.co";
+window.AJA_SUPABASE_URL="https://sufqelfxaxigyxjkivyl.supabase.co";
 window.AJA_SUPABASE_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZnFlbGZ4YXhpZ3l4amtpdnlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NDE1MjksImV4cCI6MjEwNTUxNzUyOX0.wUPnn0R_RDzV8Au9NxIFc74KDFPZvRBV4G0_q2yICvE";
