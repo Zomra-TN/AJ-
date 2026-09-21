@@ -125,7 +125,7 @@ $('#loginForm').onsubmit=async e=>{
     await cloud().auth.signOut(); return;
   }
   sessionStorage.setItem('aja_admin_online',em);
-  showDash(em); loadAll();
+  showDash(em); runDiag(); loadAll();
   cloud().channel('aja-rt').on('postgres_changes',{event:'*',schema:'public',table:'aja_orders'},()=>{loadOrders();loadClients();}).on('postgres_changes',{event:'*',schema:'public',table:'aja_messages'},()=>loadSupport()).subscribe();
 };
 function showDash(em){$('#loginBox').classList.add('hidden');$('#dashBox').classList.remove('hidden');$('#adminWho').textContent=em;$('#cloudDot').innerHTML='<span class="dot"></span>en ligne';}
@@ -248,8 +248,8 @@ $('#exportCsv').onclick=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();
 };
 $('#refreshBtn').onclick=loadAll;
-(async()=>{ // restaure session si déjà connectée + diagnostic
-  if(!cloud()){$('#loginErr').textContent='Config cloud manquante (config.js).';$('#diagLine').textContent='✗ config.js manquant';return;}
+async function runDiag(){
+  if(!cloud()){$('#diagLine').textContent='✗ config.js manquant';return;}
   const friendly = '✗ Pas de connexion à la base. Si tu es en Tunisie avec certains FAI : active Secure DNS (Chrome > Paramètres > Sécurité > Use secure DNS > Cloudflare) ou app WARP, puis recharge.';
   try{
     const ctl = new AbortController(); const to = setTimeout(()=>ctl.abort(), 12000);
@@ -262,6 +262,10 @@ $('#refreshBtn').onclick=loadAll;
     }
     $('#diagLine').innerHTML = '✓ Base joignable. Tables OK : <strong>' + (okTables.join(', ')||'aucune — exécute supabase-schema-standalone.sql') + '</strong>';
   }catch(e){ $('#diagLine').textContent = friendly; }
+}
+(async()=>{ // restaure session si déjà connectée + diagnostic
+  if(!cloud()){$('#loginErr').textContent='Config cloud manquante (config.js).';$('#diagLine').textContent='✗ config.js manquant';return;}
+  await runDiag();
   const {data}=await cloud().auth.getSession().catch(()=>({data:{}}));
   if(data.session){
     const ok=await ensureProfile(data.session.user);
