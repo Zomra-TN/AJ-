@@ -70,6 +70,11 @@ function ajaClient(){
   if(!ajaCloud) ajaCloud = window.supabase.createClient(window.AJA_SUPABASE_URL, window.AJA_SUPABASE_ANON);
   return ajaCloud;
 }
+function netMsg(msg){
+  if(!msg) return '';
+  if(/failed to fetch|network|load failed/i.test(msg)) return 'Pas de connexion à la base (réseau/DNS). Active Secure DNS Cloudflare dans ton navigateur ou app WARP, puis réessaie.';
+  return msg;
+}
 async function loadMyOrders(uid){
   const box = $('#myOrders'); if(!box) return;
   try{
@@ -202,7 +207,7 @@ $('#authForm').onsubmit=async e=>{
   const c = ajaClient(); if(!c){ $('#authErr').textContent='Cloud non configuré.'; return; }
   const em=$('#authEmail').value.trim(), pw=$('#authPw').value;
   const {data, error} = await c.auth.signInWithPassword({email:em, password:pw});
-  if(error){ $('#authErr').textContent = error.message; return; }
+  if(error){ $('#authErr').textContent = netMsg(error.message); return; }
   $('#authErr').textContent='';
   try{ await c.from('profiles').upsert({id:data.user.id, email:em}, {onConflict:'id'}); }catch(err){}
   refreshMe();
@@ -212,7 +217,7 @@ $('#signupBtn2').onclick=async()=>{
   const em=$('#authEmail').value.trim(), pw=$('#authPw').value, ph=$('#authPhone').value.trim();
   if(pw.length<6){ $('#authErr').textContent='Mot de passe : 6 caractères min.'; return; }
   const {data, error} = await c.auth.signUp({email:em, password:pw});
-  if(error){ $('#authErr').textContent = error.message; return; }
+  if(error){ $('#authErr').textContent = netMsg(error.message); return; }
   if(data.user){
     try{ await c.from('profiles').upsert({id:data.user.id, email:em, phone:ph||null}, {onConflict:'id'}); }catch(err){}
     $('#authErr').textContent='✓ Compte créé ! Connecte-toi maintenant.';

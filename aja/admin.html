@@ -42,6 +42,9 @@ input,select,textarea{width:100%}
 <label>Mot de passe<input id="adminPass" type="password" placeholder="••••••••" required/></label>
 <div class="rowflex"><button class="btn btn-dark" type="submit">Se connecter</button><button class="btn btn-gold" type="button" id="signupBtn">Créer le compte</button></div>
 <p id="loginErr" style="color:#a00"></p>
+<div id="diagBox" style="margin-top:12px;font-size:13px;background:#F5F0E8;border:1px solid #e6ddc6;border-radius:12px;padding:12px">
+<strong>Diagnostic cloud :</strong> <span id="diagLine">test en cours...</span>
+</div>
 <small class="muted">1) Clique « Créer le compte » une fois (choisis ton mot de passe). 2) Connecte-toi. 3) Si pas encore admin, la page affichera « compte créé, activation requise » — exécute la ligne SQL fournie puis reconnecte-toi.</small>
 </form>
 </div>
@@ -245,9 +248,21 @@ $('#exportCsv').onclick=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();
 };
 $('#refreshBtn').onclick=loadAll;
-(async()=>{ // restaure session si déjà connectée
-  if(!cloud()){$('#loginErr').textContent='Config cloud manquante (config.js).';return;}
-  const {data}=await cloud().auth.getSession();
+(async()=>{ // restaure session si déjà connectée + diagnostic
+  if(!cloud()){$('#loginErr').textContent='Config cloud manquante (config.js).';$('#diagLine').textContent='✗ config.js manquant';return;}
+  const friendly = '✗ Pas de connexion à la base. Si tu es en Tunisie avec certains FAI : active Secure DNS (Chrome > Paramètres > Sécurité > Use secure DNS > Cloudflare) ou app WARP, puis recharge.';
+  try{
+    const ctl = new AbortController(); const to = setTimeout(()=>ctl.abort(), 12000);
+    const res = await fetch(window.AJA_SUPABASE_URL + '/auth/v1/health', {signal: ctl.signal});
+    clearTimeout(to);
+    if(!res.ok) throw 0;
+    let okTables = [];
+    for(const tb of ['aja_products','aja_orders','aja_messages','profiles']){
+      try{ const r = await cloud().from(tb).select(tb==='profiles'?'id':'*', tb==='profiles'?{count:'exact',head:true}:undefined).limit(1); if(!r.error) okTables.push(tb); }catch(e){}
+    }
+    $('#diagLine').innerHTML = '✓ Base joignable. Tables OK : <strong>' + (okTables.join(', ')||'aucune — exécute supabase-schema-standalone.sql') + '</strong>';
+  }catch(e){ $('#diagLine').textContent = friendly; }
+  const {data}=await cloud().auth.getSession().catch(()=>({data:{}}));
   if(data.session){
     const ok=await ensureProfile(data.session.user);
     if(ok){showDash(data.session.user.email);loadAll();
