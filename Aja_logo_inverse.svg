@@ -1,0 +1,9 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#111111"/>
+  <!-- Top thin line white -->
+  <line x1="412" y1="380" x2="612" y2="380" stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+  <text x="512" y="500" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="140" font-weight="300" letter-spacing="24" fill="#FFFFFF" text-anchor="middle">AJÀ</text>
+  <line x1="412" y1="530" x2="612" y2="530" stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+  <text x="512" y="580" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="400" letter-spacing="10" fill="#BBBBBB" text-anchor="middle">ITALY — SOUL</text>
+  <circle cx="512" cy="640" r="2.5" fill="#FFFFFF"/>
+</svg>

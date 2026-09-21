@@ -1,0 +1,13 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+  <!-- Top thin line -->
+  <line x1="412" y1="380" x2="612" y2="380" stroke="#111111" stroke-width="1.2" opacity="0.9"/>
+  <!-- Brand Name AJÀ -->
+  <text x="512" y="500" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="140" font-weight="300" letter-spacing="24" fill="#111111" text-anchor="middle">AJÀ</text>
+  <!-- Bottom thin line -->
+  <line x1="412" y1="530" x2="612" y2="530" stroke="#111111" stroke-width="1.2" opacity="0.9"/>
+  <!-- Tagline -->
+  <text x="512" y="580" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="400" letter-spacing="10" fill="#666666" text-anchor="middle">ITALY — SOUL</text>
+  <!-- Small mark bottom -->
+  <circle cx="512" cy="640" r="2.5" fill="#111111"/>
+</svg>

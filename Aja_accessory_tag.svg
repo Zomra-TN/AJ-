@@ -1,0 +1,21 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#F2F2F2"/>
+  <ellipse cx="512" cy="880" rx="140" ry="12" fill="#000000" opacity="0.07"/>
+  <!-- Hang tag string -->
+  <path d="M 512 180 Q 540 220 520 260" fill="none" stroke="#C2B8A3" stroke-width="3" stroke-linecap="round"/>
+  <!-- Tag body -->
+  <rect x="392" y="260" width="240" height="340" rx="6" fill="#FFFFFF" stroke="#E8E0D0" stroke-width="2.5"/>
+  <!-- Hole -->
+  <circle cx="512" cy="290" r="14" fill="#F2F2F2" stroke="#C2B8A3" stroke-width="2"/>
+  <circle cx="512" cy="290" r="5" fill="#FFFFFF" stroke="#C2B8A3" stroke-width="1"/>
+  <!-- Border inner -->
+  <rect x="406" y="315" width="212" height="270" rx="2" fill="none" stroke="#111111" stroke-width="0.8" opacity="0.15"/>
+  <!-- Logo -->
+  <text x="512" y="435" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="52" font-weight="300" letter-spacing="10" fill="#111111" text-anchor="middle">AJÀ</text>
+  <line x1="454" y1="452" x2="570" y2="452" stroke="#111111" stroke-width="1"/>
+  <text x="512" y="480" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" letter-spacing="6" fill="#888888" text-anchor="middle">ITALY — SOUL</text>
+  <!-- Bottom text -->
+  <text x="512" y="540" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="8" font-weight="400" letter-spacing="3" fill="#AAAAAA" text-anchor="middle">100% COTTON • UNISEX</text>
+  <!-- Label -->
+  <text x="512" y="720" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="400" letter-spacing="6" fill="#999999" text-anchor="middle">ACCESSORY — HANG TAG</text>
+</svg>
