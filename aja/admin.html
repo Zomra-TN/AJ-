@@ -59,7 +59,7 @@ input,select,textarea{width:100%}
 </div>
 <div class="tabs"><button class="tab active" data-tab="orders">Commandes</button><button class="tab" data-tab="clients">Clients</button><button class="tab" data-tab="support">Support 💬 <span id="supDot" style="display:none">●</span></button><button class="tab" data-tab="products">Produits</button></div>
 <div id="tab-orders">
-<div class="rowflex" style="margin-top:12px"><button class="btn btn-gold mini" id="exportCsv">Export CSV</button><button class="btn btn-dark mini" id="refreshBtn">↻ Actualiser</button><span class="muted" id="rtInfo">temps réel actif</span></div>
+<div class="rowflex" style="margin-top:12px"><button class="btn btn-gold mini" id="exportCsv">Export CSV</button><button class="btn btn-dark mini" id="refreshBtn">↻ Actualiser</button><button class="btn btn-dark mini" id="resetFilter">Tous</button><span class="muted" id="rtInfo">temps réel actif + auto-refresh 30s</span></div>
 <div id="ordersTable"></div>
 </div>
 <div id="tab-clients" class="hidden">
@@ -248,6 +248,8 @@ $('#exportCsv').onclick=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='aja-commandes.csv';a.click();
 };
 $('#refreshBtn').onclick=loadAll;
+$('#resetFilter').onclick=()=>{ document.querySelectorAll('#ordersTable table tr').forEach(tr=>{ tr.style.display=''; }); };
+setInterval(()=>{ if(!$('#dashBox').classList.contains('hidden')){ loadOrders(); loadSupport(); } }, 30000);
 async function runDiag(){
   if(!cloud()){$('#diagLine').textContent='✗ config.js manquant';return;}
   const friendly = '✗ Pas de connexion à la base. Si tu es en Tunisie avec certains FAI : active Secure DNS (Chrome > Paramètres > Sécurité > Use secure DNS > Cloudflare) ou app WARP, puis recharge.';
