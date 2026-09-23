@@ -1,0 +1,64 @@
+name: Notify Discord
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, closed, reopened, synchronize]
+  issues:
+    types: [opened, closed, reopened]
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          REPO: ${{ github.repository }}
+        run: |
+          WEBHOOK="${DISCORD_WEBHOOK_URL:-https://discord.com/api/webhooks/1552377713334030497/cO3SZUS7Lhr7qfi8pFpoDiWa4bCMn7FBnalMcMgjkDfc_woODzR3Fo93ZoLMp0scJgVD}"
+          python3 - "$WEBHOOK" "$EVENT_NAME" "$EVENT_PATH" "$REPO" <<'PYEOF'
+          import json, sys, urllib.request
+          webhook, event, path, repo = sys.argv[1:5]
+          with open(path) as f:
+              payload = json.load(f)
+          embed = {"color": 0xE10600, "footer": {"text": "GitHub • " + repo}}
+          if event == "push":
+              branch = str(payload.get("ref", "")).split("/")[-1]
+              commits = payload.get("commits", []) or []
+              lines = []
+              for c in commits[:5]:
+                  author = (c.get("author") or {}).get("username") or (c.get("author") or {}).get("name") or "?"
+                  lines.append("`%s` %s — %s" % (c.get("id", "")[:7], c.get("message", "").splitlines()[0][:120], author))
+              if len(commits) > 5:
+                  lines.append("… +%d autres" % (len(commits) - 5))
+              embed.update({
+                  "title": "📦 Push sur %s (%d commit(s))" % (branch, len(commits)),
+                  "description": "\n".join(lines) or "—",
+                  "url": payload.get("compare"),
+              })
+          elif event == "pull_request":
+              pr = payload["pull_request"]
+              embed.update({
+                  "title": "🔀 PR #%s %s : %s" % (pr["number"], payload.get("action"), pr["title"][:150]),
+                  "description": "par " + pr["user"]["login"],
+                  "url": pr["html_url"],
+              })
+          elif event == "issues":
+              iss = payload["issue"]
+              embed.update({
+                  "title": "❗ Issue #%s %s : %s" % (iss["number"], payload.get("action"), iss["title"][:150]),
+                  "description": "par " + iss["user"]["login"],
+                  "url": iss["html_url"],
+              })
+          else:
+              embed.update({"title": "GitHub event: %s" % event})
+          data = json.dumps({"username": "GitHub", "embeds": [embed]}).encode("utf-8")
+          req = urllib.request.Request(webhook, data=data, headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"})
+          urllib.request.urlopen(req)
+          print("Discord notified:", event)
+          PYEOF
