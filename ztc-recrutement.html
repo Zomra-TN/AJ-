@@ -104,7 +104,7 @@ table{width:100%;font-size:12px;border-collapse:collapse;margin-top:12px}th,td{b
     <div class="gamebox" id="box-VALORANT">
       <label>Rank actuel <i>*</i></label>
       <select name="val_rank"><option value="">Choisir...</option><option>Silver-Gold</option><option>Platinum-Diamond</option><option>Immortal</option><option>Radiant</option></select>
-      <label>Rôle principal</label>
+      <label>Rôle principal <i>*</i></label>
       <select name="val_role"><option value="">Choisir...</option><option>Duelist</option><option>Initiator</option><option>Controller</option><option>Sentinel</option><option>Flex</option></select>
       <label>Tracker / Valorant Profile Link <i>*</i></label>
       <input name="val_tracker" placeholder="https://tracker.gg/valorant/..." />
@@ -174,12 +174,25 @@ table{width:100%;font-size:12px;border-collapse:collapse;margin-top:12px}th,td{b
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1552377713334030497/cO3SZUS7Lhr7qfi8pFpoDiWa4bCMn7FBnalMcMgjkDfc_woODzR3Fo93ZoLMp0scJgVD";
 const chips = document.querySelectorAll('.chip');
 const jeuInput = document.getElementById('jeuInput');
+const applyForm = document.getElementById('applyForm');
+// Champs obligatoires par jeu (rank + rôle + lien tracker)
+const REQ_FIELDS = {
+  "VALORANT": ["val_rank","val_role","val_tracker"],
+  "LEAGUE OF LEGENDS": ["lol_rank","lol_role","lol_opgg"],
+  "CS2": ["cs_rank","cs_role","cs_link"],
+  "EA FC 27": ["fc_mode","fc_id"]
+};
+function syncRequired(){
+  Object.values(REQ_FIELDS).flat().forEach(n=>{const el=applyForm.elements[n];if(el)el.required=false;});
+  (REQ_FIELDS[game]||[]).forEach(n=>{const el=applyForm.elements[n];if(el)el.required=true;});
+}
 let game = "";
 chips.forEach(c=>c.addEventListener('click',()=>{
   chips.forEach(x=>x.classList.remove('active'));c.classList.add('active');
   game=c.dataset.g;jeuInput.value=game;
   document.querySelectorAll('.gamebox').forEach(b=>b.classList.remove('show'));
   const b=document.getElementById('box-'+game);if(b)b.classList.add('show');
+  syncRequired();
 }));
 document.getElementById('applyForm').addEventListener('submit',async function(e){
   e.preventDefault();
