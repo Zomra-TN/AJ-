@@ -17,11 +17,10 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PATH: ${{ github.event_path }}
           REPO: ${{ github.repository }}
         run: |
           WEBHOOK="${DISCORD_WEBHOOK_URL:-https://discord.com/api/webhooks/1552377713334030497/cO3SZUS7Lhr7qfi8pFpoDiWa4bCMn7FBnalMcMgjkDfc_woODzR3Fo93ZoLMp0scJgVD}"
-          python3 - "$WEBHOOK" "$EVENT_NAME" "$EVENT_PATH" "$REPO" <<'PYEOF'
+          python3 - "$WEBHOOK" "$EVENT_NAME" "$GITHUB_EVENT_PATH" "$REPO" <<'PYEOF'
           import json, sys, urllib.request
           webhook, event, path, repo = sys.argv[1:5]
           with open(path) as f:
