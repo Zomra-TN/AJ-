@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ZTC-Esports — Recrutement Pro Players</title>
-<meta name="description" content="ZTC-Esports (Zomra Tunisian Club) recrute : VALORANT, League of Legends, CS2, EA FC 27. Postule maintenant !" />
+<meta name="description" content="ZTC-Esports (Zomra Tunisian Club) recrute : VALORANT, League of Legends, CS2, EA FC 27, TEKKEN 8. Postule maintenant !" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--red:#e10600;--red2:#ff2a2a;--bg:#0a0a0e;--card:#14141c;--line:#262632;--txt:#f5f5f7;--mut:#a7a7b5;--gold:#d4af37}
@@ -61,6 +61,7 @@ table{width:100%;font-size:12px;border-collapse:collapse;margin-top:12px}th,td{b
   <div class="g"><b>⚔️ LEAGUE OF LEGENDS</b><small>Top, Mid, Jungle, ADC, Support<br>High Diamond / Master+</small></div>
   <div class="g"><b>💣 CS2</b><small>Entry, AWP, IGL, Support<br>Faceit Level 8+</small></div>
   <div class="g"><b>⚽ EA SPORTS FC 27</b><small>Competitive Players<br>Ultimate Team / Competitive History</small></div>
+  <div class="g"><b>👊 TEKKEN 8</b><small>Fighters 1v1<br>Fujin+ / Tournaments preferred</small></div>
 </div>
 
 <div class="wrap">
@@ -97,6 +98,7 @@ table{width:100%;font-size:12px;border-collapse:collapse;margin-top:12px}th,td{b
       <div class="chip" data-g="LEAGUE OF LEGENDS">⚔️ LEAGUE OF LEGENDS</div>
       <div class="chip" data-g="CS2">💣 CS2</div>
       <div class="chip" data-g="EA FC 27">⚽ EA FC 27</div>
+      <div class="chip" data-g="TEKKEN 8">👊 TEKKEN 8</div>
     </div>
     <input type="hidden" name="jeu" id="jeuInput" required />
 
@@ -131,6 +133,15 @@ table{width:100%;font-size:12px;border-collapse:collapse;margin-top:12px}th,td{b
       <select name="fc_mode"><option value="">Choisir...</option><option>Ultimate Team</option><option>Clubs</option><option>Kick-Off compétitif</option></select>
       <label>PSN / EA ID / Xbox Gamertag <i>*</i></label><input name="fc_id" placeholder="Ex: ZTC_Ahmed_TN" />
       <label>Palmarès / Historique tournois</label><textarea name="fc_palmares" rows="2" placeholder="Tournois joués, classements..."></textarea>
+    </div>
+    <!-- TEKKEN 8 -->
+    <div class="gamebox" id="box-TEKKEN 8">
+      <label>Rank actuel <i>*</i></label>
+      <select name="tk_rank"><option value="">Choisir...</option><option>1st-10th Dan</option><option>Mighty Ruler</option><option>Flame Ruler</option><option>Battle Ruler</option><option>Fujin</option><option>Raijin</option><option>Kishin</option><option>Bushin</option><option>Tekken King</option><option>Tekken Emperor</option><option>Tekken God+</option></select>
+      <label>Main (personnage) <i>*</i></label>
+      <select name="tk_main"><option value="">Choisir...</option><option>Jin</option><option>Kazuya</option><option>Heihachi</option><option>Reina</option><option>Paul</option><option>Law</option><option>King</option><option>Nina</option><option>Hwoarang</option><option>Jin Devil / Devil Jin</option><option>Yoshimitsu</option><option>Dragunov</option><option>Feng</option><option>Lars</option><option>Alisa</option><option>Xiaoyu</option><option>Asuka</option><option>Lili</option><option>Shaheen</option><option>Claudio</option><option>Leo</option><option>Steve</option><option>Bryan</option><option>Jack-8</option><option>Kuma / Panda</option><option>Lee</option><option>Leroy</option><option>Zafina</option><option>Raven</option><option>Victor</option><option>Azucena</option><option>Autre</option></select>
+      <label>Tekken ID / PSN / Xbox / Steam ID <i>*</i></label><input name="tk_id" placeholder="Ex: ZTC_Kazuya_TN" />
+      <label>Palmarès / Tournois offline & online</label><textarea name="tk_palmares" rows="2" placeholder="Tournois joués, top 8, classements..."></textarea>
     </div>
 
     <label>Expérience compétitive / Team précédente</label>
@@ -180,7 +191,8 @@ const REQ_FIELDS = {
   "VALORANT": ["val_rank","val_role","val_tracker"],
   "LEAGUE OF LEGENDS": ["lol_rank","lol_role","lol_opgg"],
   "CS2": ["cs_rank","cs_role","cs_link"],
-  "EA FC 27": ["fc_mode","fc_id"]
+  "EA FC 27": ["fc_mode","fc_id"],
+  "TEKKEN 8": ["tk_rank","tk_main","tk_id"]
 };
 function syncRequired(){
   Object.values(REQ_FIELDS).flat().forEach(n=>{const el=applyForm.elements[n];if(el)el.required=false;});
@@ -196,7 +208,7 @@ chips.forEach(c=>c.addEventListener('click',()=>{
 }));
 document.getElementById('applyForm').addEventListener('submit',async function(e){
   e.preventDefault();
-  if(!game){alert('Ekhtar el jeu (VALORANT / LoL / CS2 / FC27)');return;}
+  if(!game){alert('Ekhtar el jeu (VALORANT / LoL / CS2 / FC27 / TEKKEN 8)');return;}
   const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='⏳ Envoi vers Discord...';
   const fd=new FormData(e.target);const d=Object.fromEntries(fd.entries());
   d.date=new Date().toLocaleString('fr-TN');
@@ -204,9 +216,9 @@ document.getElementById('applyForm').addEventListener('submit',async function(e)
   const all=JSON.parse(localStorage.getItem('ztc_candidates')||'[]');all.push(d);
   localStorage.setItem('ztc_candidates',JSON.stringify(all));
   // build discord embed
-  const tracker=d.val_tracker||d.lol_opgg||d.cs_link||d.fc_id||'-';
-  const rank=d.val_rank||d.lol_rank||d.cs_rank||d.fc_mode||'-';
-  const role=d.val_role||d.lol_role||d.cs_role||d.lol_champs||'-';
+  const tracker=d.val_tracker||d.lol_opgg||d.cs_link||d.fc_id||d.tk_id||'-';
+  const rank=d.val_rank||d.lol_rank||d.cs_rank||d.fc_mode||d.tk_rank||'-';
+  const role=d.val_role||d.lol_role||d.cs_role||d.lol_champs||d.tk_main||'-';
   const embed={
     title:"🔥 NOUVELLE CANDIDATURE — ZTC-Esports",
     color:14713344,
@@ -245,7 +257,7 @@ document.getElementById('applyForm').addEventListener('submit',async function(e)
 });
 document.getElementById('copyBtn').addEventListener('click',()=>{
   const d=window._lastCand;if(!d)return;
-  const t=`ZTC Candidature - ${d.pseudo} (${d.jeu}) - ${d.age}ans - ${d.phone} - Discord:${d.discord} - Tracker:${d.val_tracker||d.lol_opgg||d.cs_link||d.fc_id||'-'} - Dispo:${d.dispo} - Motiv:${d.motivation}`;
+  const t=`ZTC Candidature - ${d.pseudo} (${d.jeu}) - ${d.age}ans - ${d.phone} - Discord:${d.discord} - Tracker:${d.val_tracker||d.lol_opgg||d.cs_link||d.fc_id||d.tk_id||'-'} - Dispo:${d.dispo} - Motiv:${d.motivation}`;
   navigator.clipboard.writeText(t);alert('Candidature copiée !');
 });
 // admin mode ?admin=1
@@ -255,9 +267,9 @@ if(location.search.includes('admin=1')){
   document.getElementById('cCount').textContent=all.length;
   const tb=document.querySelector('#cTable tbody');
   all.forEach(c=>{const tr=document.createElement('tr');
-    const tracker=c.val_tracker||c.lol_opgg||c.cs_link||c.fc_id||'';
-    const rank=c.val_rank||c.lol_rank||c.cs_rank||c.fc_mode||'';
-    const role=c.val_role||c.lol_role||c.cs_role||'';
+    const tracker=c.val_tracker||c.lol_opgg||c.cs_link||c.fc_id||c.tk_id||'';
+    const rank=c.val_rank||c.lol_rank||c.cs_rank||c.fc_mode||c.tk_rank||'';
+    const role=c.val_role||c.lol_role||c.cs_role||c.tk_main||'';
     tr.innerHTML=`<td>${c.date||''}</td><td>${c.pseudo||''}</td><td>${c.jeu||''}</td><td>${rank} ${role}</td><td>${c.discord||''}</td><td>${c.phone||''}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${tracker}</td>`;
     tb.appendChild(tr);});
   document.getElementById('csvBtn').addEventListener('click',()=>{
